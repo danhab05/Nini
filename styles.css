@@ -804,10 +804,6 @@ body {
   color: var(--nini-ink);
 }
 
-.nini-hours__row dd.nini-hours__closed {
-  color: var(--nini-accent);
-}
-
 .nini-address {
   margin: 40px 0 0;
   color: var(--nini-muted);
