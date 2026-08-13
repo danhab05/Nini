@@ -1,0 +1,849 @@
+/* ============================================================ */
+/* Nini — bleu nuit, ivoire, harissa. Version statique (Pages). */
+/* ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+img {
+  max-width: 100%;
+}
+
+:root {
+  --nini-ground: #101724;
+  --nini-ground-2: #141e2e;
+  --nini-ink: #f3eee3;
+  --nini-muted: #a9a69b;
+  --nini-accent: #c03b2d;
+  --nini-hairline: rgb(243 238 227 / 0.18);
+  --nini-hairline-soft: rgb(243 238 227 / 0.09);
+  --nini-font-display: "Satoshi", ui-sans-serif, system-ui, sans-serif;
+  --nini-font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+  --nini-gutter: clamp(20px, 4vw, 56px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  background-color: var(--nini-ground);
+}
+
+.nini-page {
+  background-color: var(--nini-ground);
+  color: var(--nini-ink);
+  font-family: var(--nini-font-display);
+  -webkit-font-smoothing: antialiased;
+}
+
+.nini-page ::selection {
+  background: var(--nini-accent);
+  color: var(--nini-ink);
+}
+
+.nini-page section[id],
+.nini-page article[id] {
+  scroll-margin-top: 72px;
+}
+
+/* ---- Nav ---- */
+
+.nini-nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px var(--nini-gutter) 28px;
+  background: linear-gradient(rgb(16 23 36 / 0.88), rgb(16 23 36 / 0));
+  pointer-events: none;
+}
+
+.nini-nav > * {
+  pointer-events: auto;
+}
+
+.nini-nav__brand {
+  color: var(--nini-ink);
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.nini-nav__dot {
+  color: var(--nini-accent);
+}
+
+.nini-nav__links {
+  display: flex;
+  gap: clamp(20px, 3vw, 40px);
+}
+
+.nini-nav__links a {
+  color: var(--nini-muted);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+
+.nini-nav__links a:hover,
+.nini-nav__links a:focus-visible {
+  color: var(--nini-ink);
+}
+
+/* ---- Le voyage (scroll scrub) ---- */
+
+.scrub {
+  position: relative;
+  background: var(--nini-ground);
+}
+
+.scrub__stage {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.scrub__layer {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.scrub__layer.is-active {
+  opacity: 1;
+}
+
+.scrub__layer:first-child {
+  opacity: 1;
+}
+
+.scrub__layer img,
+.scrub__layer video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.scrub__layer video {
+  opacity: 0;
+}
+
+.scrub__layer.is-painted video {
+  opacity: 1;
+}
+
+.scrub__stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgb(16 23 36 / 0.42), rgb(16 23 36 / 0.08) 30%, rgb(16 23 36 / 0.5));
+  pointer-events: none;
+}
+
+.scrub__progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 3;
+  background: rgb(243 238 227 / 0.12);
+}
+
+.scrub__progress span {
+  display: block;
+  height: 100%;
+  background: var(--nini-accent);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+.scrub__route {
+  position: absolute;
+  left: clamp(12px, 2vw, 28px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.scrub__route button {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 4px 0;
+  text-align: left;
+  color: rgb(243 238 227 / 0.45);
+  font-family: var(--nini-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.scrub__route button:hover,
+.scrub__route button:focus-visible,
+.scrub__route button.is-active {
+  color: var(--nini-ink);
+}
+
+.scrub__route button.is-active {
+  color: var(--nini-accent);
+}
+
+.scrub__story {
+  position: relative;
+  z-index: 2;
+  margin-top: -100dvh;
+}
+
+.scrub__chapter {
+  min-height: calc(var(--band, 260) * 1dvh);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--nini-gutter);
+}
+
+.scrub__chapter[data-align="right"] {
+  justify-content: flex-end;
+}
+
+.scrub__copy {
+  max-width: 560px;
+  padding: 32px 0;
+}
+
+.scrub__chapter[data-align="right"] .scrub__copy {
+  text-align: left;
+}
+
+.scrub__kicker {
+  margin: 0 0 18px;
+  color: var(--nini-accent);
+  font-family: var(--nini-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.scrub__title {
+  margin: 0;
+  font-size: clamp(40px, 7vw, 88px);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
+  color: var(--nini-ink);
+}
+
+.scrub__body {
+  margin: 22px 0 0;
+  max-width: 44ch;
+  color: rgb(243 238 227 / 0.82);
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.scrub__tags {
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  gap: 16px;
+}
+
+.scrub__tags li {
+  color: rgb(243 238 227 / 0.55);
+  font-family: var(--nini-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.scrub__actions {
+  margin-top: 30px;
+}
+
+/* ---- CTA garments ---- */
+
+.nini-cta-reserve {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 30px;
+  border: 1px solid var(--nini-ink);
+  overflow: hidden;
+  isolation: isolate;
+  color: var(--nini-ink);
+  font-family: var(--nini-font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: border-color 0.3s ease;
+}
+
+.nini-cta-reserve::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  background: var(--nini-accent);
+  transform: translateY(101%);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nini-cta-reserve:hover,
+.nini-cta-reserve:focus-visible {
+  border-color: var(--nini-accent);
+}
+
+.nini-cta-reserve:hover::before,
+.nini-cta-reserve:focus-visible::before {
+  transform: translateY(0);
+}
+
+.nini-cta-reserve:active {
+  transform: translateY(1px);
+}
+
+.nini-cta-reserve--compact {
+  padding: 10px 20px;
+  font-size: 12px;
+}
+
+.nini-cta-menu {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 180px;
+  color: var(--nini-ink);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+.nini-cta-menu__rail {
+  position: relative;
+  display: block;
+  height: 14px;
+}
+
+.nini-cta-menu__rail::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 6px;
+  height: 1px;
+  background: var(--nini-hairline);
+}
+
+.nini-cta-menu__arrow {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  line-height: 1;
+  color: var(--nini-accent);
+  transition: left 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nini-cta-menu:hover .nini-cta-menu__arrow,
+.nini-cta-menu:focus-visible .nini-cta-menu__arrow {
+  left: calc(100% - 1.1em);
+}
+
+.nini-cta-map {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: var(--nini-muted);
+  font-family: var(--nini-font-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.nini-cta-map::before,
+.nini-cta-map::after {
+  content: "";
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  transition: transform 0.3s ease;
+}
+
+.nini-cta-map::before {
+  top: 0;
+  left: 0;
+  border-top: 1px solid var(--nini-ink);
+  border-left: 1px solid var(--nini-ink);
+}
+
+.nini-cta-map::after {
+  right: 0;
+  bottom: 0;
+  border-right: 1px solid var(--nini-ink);
+  border-bottom: 1px solid var(--nini-ink);
+}
+
+.nini-cta-map:hover,
+.nini-cta-map:focus-visible {
+  color: var(--nini-ink);
+}
+
+.nini-cta-map:hover::before,
+.nini-cta-map:focus-visible::before {
+  transform: translate(5px, 5px);
+}
+
+.nini-cta-map:hover::after,
+.nini-cta-map:focus-visible::after {
+  transform: translate(-5px, -5px);
+}
+
+/* ---- Shared type ---- */
+
+.nini-eyebrow {
+  margin: 0 0 20px;
+  color: var(--nini-accent);
+  font-family: var(--nini-font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+/* ---- La carte ---- */
+
+.nini-carte {
+  position: relative;
+  z-index: 2;
+  padding: clamp(96px, 12vw, 170px) var(--nini-gutter);
+  background: var(--nini-ground);
+}
+
+.nini-carte__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: clamp(48px, 7vw, 110px);
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.nini-carte__title {
+  margin: 0;
+  font-size: clamp(44px, 6vw, 84px);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
+}
+
+.nini-menu {
+  margin: 56px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nini-menu__item {
+  padding: 26px 0;
+  border-top: 1px solid var(--nini-hairline-soft);
+}
+
+.nini-menu__item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.nini-menu__name {
+  margin: 0;
+  font-size: clamp(24px, 2.6vw, 34px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), color 0.35s ease;
+}
+
+.nini-menu__item:hover .nini-menu__name {
+  transform: translateX(8px);
+  color: var(--nini-accent);
+}
+
+.nini-menu__desc {
+  margin: 10px 0 0;
+  color: var(--nini-muted);
+  font-family: var(--nini-font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.nini-menu__tag {
+  margin: 10px 0 0;
+  color: rgb(243 238 227 / 0.42);
+  font-family: var(--nini-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.nini-carte__note {
+  margin: 40px 0 0;
+  max-width: 52ch;
+  color: var(--nini-muted);
+  font-family: var(--nini-font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.nini-carte__photos {
+  align-self: center;
+  position: relative;
+}
+
+.nini-photo {
+  margin: 0;
+  border: 1px solid var(--nini-hairline);
+  background: var(--nini-ground-2);
+  overflow: hidden;
+}
+
+.nini-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nini-photo:hover img {
+  transform: scale(1.035);
+}
+
+.nini-photo--1 {
+  width: 76%;
+  margin-left: 24%;
+  position: relative;
+  z-index: 3;
+}
+
+.nini-photo--2 {
+  width: 60%;
+  margin-top: -22%;
+  position: relative;
+  z-index: 2;
+}
+
+.nini-photo--3 {
+  width: 68%;
+  margin-top: -14%;
+  margin-left: 32%;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- La maison ---- */
+
+.nini-maison {
+  position: relative;
+  z-index: 2;
+  padding: clamp(96px, 12vw, 170px) 0 clamp(96px, 12vw, 170px) var(--nini-gutter);
+  background: var(--nini-ground-2);
+  overflow: hidden;
+}
+
+.nini-maison__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: clamp(48px, 6vw, 96px);
+  align-items: center;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.nini-maison__title {
+  margin: 0 0 28px;
+  font-size: clamp(36px, 4.6vw, 64px);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+}
+
+.nini-maison__text p {
+  margin: 0;
+  max-width: 58ch;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.nini-maison__secondary {
+  margin-top: 16px !important;
+  color: var(--nini-muted);
+}
+
+.nini-maison__media {
+  position: relative;
+  margin: 0;
+  padding-left: 36px;
+}
+
+.nini-maison__media img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--nini-hairline);
+}
+
+.nini-maison__caption {
+  position: absolute;
+  top: 0;
+  left: 0;
+  writing-mode: vertical-rl;
+  color: var(--nini-muted);
+  font-family: var(--nini-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* ---- Infos pratiques ---- */
+
+.nini-infos {
+  position: relative;
+  z-index: 2;
+  padding: clamp(96px, 12vw, 170px) var(--nini-gutter);
+  background: var(--nini-ground);
+  overflow: hidden;
+}
+
+.nini-infos__numeral {
+  position: absolute;
+  left: -0.05em;
+  bottom: -0.22em;
+  margin: 0;
+  color: rgb(243 238 227 / 0.05);
+  font-size: clamp(260px, 38vw, 580px);
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.nini-infos__inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(48px, 6vw, 96px);
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.nini-infos__title {
+  margin: 0 0 40px;
+  font-size: clamp(36px, 4.6vw, 64px);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+}
+
+.nini-infos__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+}
+
+.nini-hours {
+  margin: 0;
+}
+
+.nini-hours__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  padding: 16px 0;
+  border-top: 1px solid var(--nini-hairline-soft);
+  font-family: var(--nini-font-mono);
+  font-size: 14px;
+}
+
+.nini-hours__row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.nini-hours__row dt {
+  color: var(--nini-muted);
+}
+
+.nini-hours__row dd {
+  margin: 0;
+  color: var(--nini-ink);
+}
+
+.nini-hours__row dd.nini-hours__closed {
+  color: var(--nini-accent);
+}
+
+.nini-address {
+  margin: 40px 0 0;
+  color: var(--nini-muted);
+  font-family: var(--nini-font-mono);
+  font-size: 14px;
+  font-style: normal;
+  line-height: 2;
+}
+
+.nini-address a {
+  color: var(--nini-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--nini-hairline);
+  transition: border-color 0.3s ease;
+}
+
+.nini-address a:hover,
+.nini-address a:focus-visible {
+  border-color: var(--nini-accent);
+}
+
+/* ---- Footer ---- */
+
+.nini-footer {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: clamp(72px, 9vw, 120px) var(--nini-gutter) 56px;
+  border-top: 1px solid var(--nini-hairline-soft);
+  background: var(--nini-ground);
+  text-align: center;
+}
+
+.nini-footer__mark {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 1px solid var(--nini-hairline);
+  object-fit: cover;
+}
+
+.nini-footer__brand {
+  margin: 4px 0 0;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.nini-footer__line {
+  margin: 0;
+  max-width: 52ch;
+  color: var(--nini-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.nini-footer__meta {
+  margin: 0;
+  color: rgb(243 238 227 / 0.42);
+  font-family: var(--nini-font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+
+/* ---- Mobile ---- */
+
+@media (max-width: 860px) {
+  .nini-nav {
+    padding: 14px 20px 22px;
+  }
+
+  .nini-nav__links {
+    display: none;
+  }
+
+  .scrub__route {
+    display: none;
+  }
+
+  .scrub__copy {
+    max-width: 100%;
+  }
+
+  .nini-carte__inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .nini-carte__photos {
+    margin-top: 8px;
+  }
+
+  .nini-maison__inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .nini-maison {
+    padding-right: var(--nini-gutter);
+  }
+
+  .nini-maison__media {
+    padding-left: 0;
+    padding-top: 28px;
+  }
+
+  .nini-maison__caption {
+    writing-mode: horizontal-tb;
+  }
+
+  .nini-infos__inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .nini-infos__numeral {
+    font-size: 62vw;
+  }
+}
+
+/* ---- Reduced motion: static but complete ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  .nini-page *,
+  .nini-page *::before,
+  .nini-page *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
