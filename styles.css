@@ -600,16 +600,36 @@ body {
 }
 
 .nini-cat__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 18px;
   padding: 13px 0;
   border-top: 1px solid var(--nini-hairline-soft);
 }
 
 .nini-cat__name {
+  grid-column: 1;
   margin: 0;
   font-size: 19px;
   font-weight: 500;
   line-height: 1.3;
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), color 0.35s ease;
+}
+
+.nini-cat__price {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  margin: 0;
+  padding-top: 3px;
+  color: rgb(243 238 227 / 0.88);
+  font-family: var(--nini-font-mono);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.nini-cat__item:hover .nini-cat__price {
+  color: var(--nini-accent);
 }
 
 .nini-cat__item:hover .nini-cat__name {
@@ -618,6 +638,7 @@ body {
 }
 
 .nini-cat__desc {
+  grid-column: 1;
   margin: 4px 0 0;
   color: var(--nini-muted);
   font-family: var(--nini-font-mono);
@@ -626,12 +647,21 @@ body {
 }
 
 .nini-cat__flag {
+  grid-column: 1;
   margin: 6px 0 0;
   color: var(--nini-accent);
   font-family: var(--nini-font-mono);
   font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
+}
+
+.nini-carte__legal {
+  margin: clamp(48px, 6vw, 72px) 0 0;
+  color: rgb(243 238 227 / 0.4);
+  font-family: var(--nini-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
 }
 
 /* ---- La maison ---- */
