@@ -161,7 +161,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(rgb(16 23 36 / 0.42), rgb(16 23 36 / 0.08) 30%, rgb(16 23 36 / 0.5));
+  background: linear-gradient(rgb(16 23 36 / 0.38), rgb(16 23 36 / 0) 26%, rgb(16 23 36 / 0) 72%, rgb(16 23 36 / 0.34));
   pointer-events: none;
 }
 
@@ -185,13 +185,13 @@ body {
 
 .scrub__route {
   position: absolute;
-  left: clamp(12px, 2vw, 28px);
-  top: 50%;
-  transform: translateY(-50%);
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
   z-index: 3;
   display: flex;
-  flex-direction: column;
-  gap: 14px;
+  flex-direction: row;
+  gap: 28px;
 }
 
 .scrub__route button {
@@ -236,9 +236,47 @@ body {
   justify-content: flex-end;
 }
 
+/* Chapitre d'ouverture : la copie vit dans le PREMIER écran, CTA compris. */
+.scrub__chapter:first-child {
+  align-items: flex-start;
+}
+
+.scrub__chapter:first-child .scrub__copy {
+  margin-top: 33dvh;
+}
+
 .scrub__copy {
+  position: relative;
   max-width: 560px;
   padding: 32px 0;
+  /* Le texte voyage avec le film : légère parallaxe pilotée par --p. */
+  transform: translateY(calc((0.5 - var(--p, 0.5)) * 44px));
+  will-change: transform;
+}
+
+/* Pénombre diégétique : une poche d'ombre douce derrière le bloc, comme si
+   la lumière de la salle laissait ce coin dans le noir, pas un bandeau posé. */
+.scrub__copy::before {
+  content: "";
+  position: absolute;
+  inset: -80px -110px;
+  z-index: -1;
+  background: radial-gradient(
+    62% 66% at 38% 50%,
+    rgb(13 19 30 / 0.78),
+    rgb(13 19 30 / 0.36) 55%,
+    transparent 80%
+  );
+  pointer-events: none;
+}
+
+.scrub__chapter[data-align="right"] .scrub__copy::before {
+  background: radial-gradient(
+    62% 66% at 62% 50%,
+    rgb(13 19 30 / 0.78),
+    rgb(13 19 30 / 0.36) 55%,
+    transparent 80%
+  );
 }
 
 .scrub__chapter[data-align="right"] .scrub__copy {
@@ -257,19 +295,29 @@ body {
 
 .scrub__title {
   margin: 0;
-  font-size: clamp(40px, 7vw, 88px);
+  font-size: clamp(40px, 6.4vw, 82px);
   font-weight: 500;
   letter-spacing: -0.03em;
   line-height: 0.98;
-  color: var(--nini-ink);
+  color: rgb(243 238 227 / 0.96);
+  /* screen : les hautes lumières du film respirent à travers les lettres,
+     la typo appartient à la scène au lieu d'être posée dessus. */
+  mix-blend-mode: screen;
+  text-wrap: balance;
 }
 
 .scrub__body {
   margin: 22px 0 0;
   max-width: 44ch;
-  color: rgb(243 238 227 / 0.82);
+  color: rgb(243 238 227 / 0.92);
   font-size: 17px;
   line-height: 1.7;
+  text-shadow: 0 1px 14px rgb(13 19 30 / 0.85), 0 0 34px rgb(13 19 30 / 0.6);
+}
+
+.scrub__tags li,
+.scrub__kicker {
+  text-shadow: 0 1px 10px rgb(13 19 30 / 0.8);
 }
 
 .scrub__tags {
@@ -787,10 +835,22 @@ body {
 
 @media (max-width: 860px) {
   .nini-nav {
-    padding: 14px 20px 22px;
+    padding: 12px 16px 20px;
+    gap: 12px;
   }
 
-  .nini-nav__links {
+  .nini-nav__brand {
+    font-size: 21px;
+  }
+
+  .nini-cta-reserve--compact {
+    padding: 9px 14px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+
+  /* Mobile : seul le lien vers la carte reste, c'est lui qui compte. */
+  .nini-nav__links a:not(:first-child) {
     display: none;
   }
 
@@ -798,16 +858,77 @@ body {
     display: none;
   }
 
+  /* Le sujet du film est centré : le texte s'ancre en bas de l'écran. */
+  .scrub__chapter {
+    align-items: flex-end;
+    padding-bottom: 13dvh;
+  }
+
+  .scrub__chapter:first-child {
+    align-items: flex-start;
+    padding-bottom: 0;
+  }
+
+  .scrub__chapter:first-child .scrub__copy {
+    margin-top: 21dvh;
+  }
+
+  .scrub__chapter[data-align="right"] {
+    justify-content: flex-start;
+  }
+
   .scrub__copy {
     max-width: 100%;
+    padding: 20px 0;
+  }
+
+  .scrub__copy::before,
+  .scrub__chapter[data-align="right"] .scrub__copy::before {
+    inset: -48px -40px -80px;
+    background: radial-gradient(
+      70% 75% at 50% 62%,
+      rgb(13 19 30 / 0.7),
+      rgb(13 19 30 / 0.3) 58%,
+      transparent 80%
+    );
+  }
+
+  .scrub__title {
+    font-size: clamp(32px, 9.6vw, 44px);
+  }
+
+  .scrub__body {
+    font-size: 15px;
+    max-width: 38ch;
+  }
+
+  .scrub__actions {
+    margin-top: 22px;
   }
 
   .nini-carte__inner {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  /* Photos : bande à défilement horizontal avec accroche, plus net que la
+     pile décalée sur petit écran. */
   .nini-carte__photos {
-    margin-top: 8px;
+    display: flex;
+    gap: 14px;
+    margin: 16px calc(var(--nini-gutter) * -1) 0;
+    padding: 0 var(--nini-gutter) 8px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nini-photo--1,
+  .nini-photo--2,
+  .nini-photo--3 {
+    flex: 0 0 72vw;
+    width: 72vw;
+    margin: 0;
+    scroll-snap-align: center;
   }
 
   .nini-maison__inner {

@@ -1,13 +1,16 @@
 /*
- * Nini — moteur de scroll minimaliste pour la version statique.
- * Le défilement joue le film : chaque chapitre possède sa tranche du plan
- * continu (tranches contiguës du même film, donc raccords invisibles).
- * Respecte prefers-reduced-motion : aucune vidéo chargée, posters seuls.
+ * Nini — moteur de scroll pour la version statique.
+ * Le défilement joue le film : la progression GLOBALE du voyage pilote le
+ * temps vidéo (les quatre tranches sont contiguës dans le même plan, donc
+ * la lecture est continue et les raccords invisibles). Le temps est lissé
+ * pour un scrub sans à-coups, et chaque chapitre expose sa progression en
+ * variable CSS (--p) pour que le texte bouge avec le film.
+ * prefers-reduced-motion : aucune vidéo chargée, posters seuls.
  */
 (function () {
   "use strict";
 
-  var stage = document.querySelector(".scrub__stage");
+  var story = document.querySelector(".scrub__story");
   var chapters = Array.prototype.slice.call(
     document.querySelectorAll(".scrub__chapter")
   );
@@ -19,7 +22,7 @@
     document.querySelectorAll(".scrub__route button")
   );
 
-  if (!stage || layers.length === 0 || chapters.length !== layers.length) {
+  if (!story || layers.length === 0 || chapters.length !== layers.length) {
     return;
   }
 
@@ -56,7 +59,7 @@
     video.playsInline = true;
     video.setAttribute("playsinline", "");
     video.setAttribute("muted", "");
-    video.preload = index === 0 ? "auto" : "metadata";
+    video.preload = "auto";
     video.src = isMobile ? layer.dataset.mobileClip : layer.dataset.clip;
     video.tabIndex = -1;
     layer.appendChild(video);
@@ -65,8 +68,10 @@
       layer: layer,
       video: video,
       chapter: chapters[index],
+      copy: chapters[index].querySelector(".scrub__copy"),
       duration: 0,
       target: 0,
+      smooth: 0,
       painted: false,
     };
 
@@ -79,16 +84,10 @@
         layer.classList.add("is-painted");
       }
     });
-    video.addEventListener("canplay", function () {
-      if (!segment.painted && video.currentTime > 0) {
-        segment.painted = true;
-        layer.classList.add("is-painted");
-      }
-    });
     return segment;
   });
 
-  // Déblocage iOS : une lecture muette d'un instant autorise le scrubbing.
+  // Déblocage mobile : une lecture muette d'un instant autorise le scrubbing.
   var primed = false;
   function primeVideos() {
     if (primed) {
@@ -113,78 +112,89 @@
   window.addEventListener("touchstart", primeVideos, { passive: true });
   window.addEventListener("pointerdown", primeVideos, { passive: true });
 
+  var clamp = function (value) {
+    return Math.min(1, Math.max(0, value));
+  };
+
   var activeIndex = 0;
   segments[0].layer.classList.add("is-active");
   if (routeButtons[0]) {
     routeButtons[0].classList.add("is-active");
   }
-  var clamp = function (value) {
-    return Math.min(1, Math.max(0, value));
-  };
 
-  function update() {
-    var viewport = window.innerHeight;
-    var globalStart = null;
-    var globalEnd = null;
-    var nextActive = activeIndex;
-
-    segments.forEach(function (segment, index) {
-      var rect = segment.chapter.getBoundingClientRect();
-      var travel = Math.max(rect.height - viewport, 1);
-      var progress = clamp(-rect.top / travel);
-      segment.target = progress;
-
-      if (globalStart === null) {
-        globalStart = rect.top + window.scrollY;
+  function setActive(index) {
+    if (index === activeIndex) {
+      return;
+    }
+    activeIndex = index;
+    segments.forEach(function (segment, i) {
+      segment.layer.classList.toggle("is-active", i === activeIndex);
+      if (i === activeIndex) {
+        // Repartir exactement du temps demandé, sans rattrapage visible.
+        segment.smooth = segment.target * Math.max(segment.duration - 0.06, 0);
       }
-      globalEnd = rect.bottom + window.scrollY;
+    });
+    routeButtons.forEach(function (button, i) {
+      button.classList.toggle("is-active", i === activeIndex);
+    });
+  }
 
-      if (rect.top <= viewport * 0.5 && rect.bottom > viewport * 0.5) {
-        nextActive = index;
+  function measure() {
+    var viewport = window.innerHeight;
+    var rect = story.getBoundingClientRect();
+    var total = Math.max(rect.height - viewport, 1);
+    var global = clamp(-rect.top / total);
+
+    // Position dans le film : 0..4 en continu sur tout le voyage.
+    var pos = Math.min(segments.length - 0.0001, global * segments.length);
+    var index = Math.floor(pos);
+    var local = pos - index;
+
+    segments.forEach(function (segment, i) {
+      segment.target = i === index ? local : i < index ? 1 : 0;
+
+      var chapterRect = segment.chapter.getBoundingClientRect();
+      var travel = Math.max(chapterRect.height, 1);
+      var p = clamp((viewport - chapterRect.top) / (travel + viewport));
+      segment.chapter.style.setProperty("--p", p.toFixed(4));
+
+      // Fondu de sortie : le texte s'éteint avant la barre de navigation,
+      // il appartient au film et n'entre jamais en collision avec le chrome.
+      if (segment.copy) {
+        var copyRect = segment.copy.getBoundingClientRect();
+        segment.copy.style.opacity = clamp((copyRect.top - 56) / 130).toFixed(3);
       }
     });
 
-    if (nextActive !== activeIndex) {
-      activeIndex = nextActive;
-      segments.forEach(function (segment, index) {
-        segment.layer.classList.toggle("is-active", index === activeIndex);
-      });
-      routeButtons.forEach(function (button, index) {
-        button.classList.toggle("is-active", index === activeIndex);
-      });
-    }
+    setActive(index);
 
-    var active = segments[activeIndex];
-    if (active && active.duration > 0) {
-      var time = active.target * Math.max(active.duration - 0.05, 0);
-      if (Math.abs(active.video.currentTime - time) > 0.033) {
+    if (progressBar) {
+      progressBar.style.transform = "scaleX(" + global + ")";
+    }
+  }
+
+  function tick() {
+    measure();
+    var segment = segments[activeIndex];
+    if (segment.duration > 0) {
+      var desired = segment.target * Math.max(segment.duration - 0.06, 0);
+      segment.smooth += (desired - segment.smooth) * 0.28;
+      if (Math.abs(desired - segment.smooth) < 0.004) {
+        segment.smooth = desired;
+      }
+      if (
+        !segment.video.seeking &&
+        Math.abs(segment.video.currentTime - segment.smooth) > 0.02
+      ) {
         try {
-          active.video.currentTime = time;
+          segment.video.currentTime = segment.smooth;
         } catch (error) {
           /* métadonnées pas encore prêtes */
         }
       }
     }
-
-    if (progressBar && globalStart !== null) {
-      var span = Math.max(globalEnd - globalStart - viewport, 1);
-      var scrolled = clamp((window.scrollY - globalStart) / span);
-      progressBar.style.transform = "scaleX(" + scrolled + ")";
-    }
+    window.requestAnimationFrame(tick);
   }
 
-  var ticking = false;
-  function requestUpdate() {
-    if (!ticking) {
-      ticking = true;
-      window.requestAnimationFrame(function () {
-        ticking = false;
-        update();
-      });
-    }
-  }
-
-  window.addEventListener("scroll", requestUpdate, { passive: true });
-  window.addEventListener("resize", requestUpdate);
-  update();
+  window.requestAnimationFrame(tick);
 })();
