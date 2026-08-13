@@ -506,120 +506,132 @@ body {
 }
 
 .nini-carte__inner {
-  display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-  gap: clamp(48px, 7vw, 110px);
   max-width: 1280px;
   margin: 0 auto;
 }
 
-.nini-carte__title {
-  margin: 0;
-  font-size: clamp(44px, 6vw, 84px);
-  font-weight: 500;
-  letter-spacing: -0.03em;
-  line-height: 0.98;
+.nini-carte__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 460px);
+  gap: clamp(32px, 5vw, 88px);
+  align-items: end;
+  margin-bottom: clamp(56px, 7vw, 100px);
 }
 
-.nini-menu {
-  margin: 56px 0 0;
+.nini-carte__title {
+  margin: 0;
+  font-size: clamp(56px, 8.5vw, 128px);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+}
+
+.nini-carte__intro {
+  margin: 0 0 10px;
+  max-width: 44ch;
+  color: var(--nini-muted);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.nini-carte__intro a {
+  color: var(--nini-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--nini-hairline);
+  transition: border-color 0.3s ease;
+}
+
+.nini-carte__intro a:hover,
+.nini-carte__intro a:focus-visible {
+  border-color: var(--nini-accent);
+}
+
+.nini-carte__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(40px, 6vw, 96px);
+  align-items: start;
+}
+
+.nini-carte__col {
+  display: grid;
+  gap: clamp(56px, 6vw, 88px);
+}
+
+.nini-cat__banner {
+  margin: 0 0 28px;
+  border: 1px solid var(--nini-hairline);
+  overflow: hidden;
+}
+
+.nini-cat__banner img {
+  display: block;
+  width: 100%;
+  height: clamp(150px, 15vw, 210px);
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nini-cat:hover .nini-cat__banner img {
+  transform: scale(1.03);
+}
+
+.nini-cat__title {
+  margin: 0;
+  font-size: clamp(26px, 2.8vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+}
+
+.nini-cat__note {
+  margin: 10px 0 0;
+  color: var(--nini-muted);
+  font-family: var(--nini-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  line-height: 1.65;
+}
+
+.nini-cat__list {
+  margin: 22px 0 0;
   padding: 0;
   list-style: none;
 }
 
-.nini-menu__item {
-  padding: 26px 0;
+.nini-cat__item {
+  padding: 13px 0;
   border-top: 1px solid var(--nini-hairline-soft);
 }
 
-.nini-menu__item:first-child {
-  border-top: 0;
-  padding-top: 0;
-}
-
-.nini-menu__name {
+.nini-cat__name {
   margin: 0;
-  font-size: clamp(24px, 2.6vw, 34px);
+  font-size: 19px;
   font-weight: 500;
-  letter-spacing: -0.01em;
-  line-height: 1.1;
+  line-height: 1.3;
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), color 0.35s ease;
 }
 
-.nini-menu__item:hover .nini-menu__name {
-  transform: translateX(8px);
+.nini-cat__item:hover .nini-cat__name {
+  transform: translateX(6px);
   color: var(--nini-accent);
 }
 
-.nini-menu__desc {
-  margin: 10px 0 0;
-  color: var(--nini-muted);
-  font-family: var(--nini-font-mono);
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.nini-menu__tag {
-  margin: 10px 0 0;
-  color: rgb(243 238 227 / 0.42);
-  font-family: var(--nini-font-mono);
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-
-.nini-carte__note {
-  margin: 40px 0 0;
-  max-width: 52ch;
+.nini-cat__desc {
+  margin: 4px 0 0;
   color: var(--nini-muted);
   font-family: var(--nini-font-mono);
   font-size: 12px;
-  line-height: 1.7;
+  line-height: 1.55;
 }
 
-.nini-carte__photos {
-  align-self: center;
-  position: relative;
-}
-
-.nini-photo {
-  margin: 0;
-  border: 1px solid var(--nini-hairline);
-  background: var(--nini-ground-2);
-  overflow: hidden;
-}
-
-.nini-photo img {
-  display: block;
-  width: 100%;
-  height: auto;
-  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.nini-photo:hover img {
-  transform: scale(1.035);
-}
-
-.nini-photo--1 {
-  width: 76%;
-  margin-left: 24%;
-  position: relative;
-  z-index: 3;
-}
-
-.nini-photo--2 {
-  width: 60%;
-  margin-top: -22%;
-  position: relative;
-  z-index: 2;
-}
-
-.nini-photo--3 {
-  width: 68%;
-  margin-top: -14%;
-  margin-left: 32%;
-  position: relative;
-  z-index: 1;
+.nini-cat__flag {
+  margin: 6px 0 0;
+  color: var(--nini-accent);
+  font-family: var(--nini-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
 /* ---- La maison ---- */
@@ -906,29 +918,23 @@ body {
     margin-top: 22px;
   }
 
-  .nini-carte__inner {
+  .nini-carte__head {
     grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 18px;
   }
 
-  /* Photos : bande à défilement horizontal avec accroche, plus net que la
-     pile décalée sur petit écran. */
-  .nini-carte__photos {
-    display: flex;
-    gap: 14px;
-    margin: 16px calc(var(--nini-gutter) * -1) 0;
-    padding: 0 var(--nini-gutter) 8px;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
+  .nini-carte__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 56px;
   }
 
-  .nini-photo--1,
-  .nini-photo--2,
-  .nini-photo--3 {
-    flex: 0 0 72vw;
-    width: 72vw;
-    margin: 0;
-    scroll-snap-align: center;
+  .nini-carte__col {
+    gap: 56px;
+  }
+
+  .nini-cat__banner img {
+    height: 160px;
   }
 
   .nini-maison__inner {
